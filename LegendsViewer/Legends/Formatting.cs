@@ -150,35 +150,35 @@ namespace LegendsViewer.Legends
 
         public static string ReplaceNonAscii(string name)
         {
-            name = name.Replace("\u017D", "a");
-            name = name.Replace("\u017E", "a");
-            name = name.Replace("\u201E", "a");
-            name = name.Replace("\u0192", "a");
-            name = name.Replace("\u008F", "a");
-            name = name.Replace("\u2020", "a");
-            name = name.Replace("\u00A0", "a");
-            name = name.Replace("\u2026", "a");
-            name = name.Replace("\u02C6", "e");
-            name = name.Replace("\u2030", "e");
-            name = name.Replace("\u201A", "e");
-            name = name.Replace("\u0220", "e");
-            name = name.Replace("\u0160", "e");
-            name = name.Replace("\u0090", "e");
-            name = name.Replace("\u2039", "i");
-            name = name.Replace("\u00A1", "i");
-            name = name.Replace("\u008D", "i");
-            name = name.Replace("\u0152", "i");
-            name = name.Replace("\u00A4", "n");
-            name = name.Replace("\u00A5", "n");
-            name = name.Replace("\u201D", "o");
-            name = name.Replace("\u00A2", "o");
-            name = name.Replace("\u2022", "o");
-            name = name.Replace("\u201C", "o");
-            name = name.Replace("\u2122", "o");
-            name = name.Replace("\u2014", "u");
-            name = name.Replace("\u2013", "u");
-            name = name.Replace("\u00A3", "u");
-            name = name.Replace("\u02DC", "y");
+            name = name.Replace('\u017D', 'a');
+            name = name.Replace('\u017E', 'a');
+            name = name.Replace('\u201E', 'a');
+            name = name.Replace('\u0192', 'a');
+            name = name.Replace('\u008F', 'a');
+            name = name.Replace('\u2020', 'a');
+            name = name.Replace('\u00A0', 'a');
+            name = name.Replace('\u2026', 'a');
+            name = name.Replace('\u02C6', 'e');
+            name = name.Replace('\u2030', 'e');
+            name = name.Replace('\u201A', 'e');
+            name = name.Replace('\u0220', 'e');
+            name = name.Replace('\u0160', 'e');
+            name = name.Replace('\u0090', 'e');
+            name = name.Replace('\u2039', 'i');
+            name = name.Replace('\u00A1', 'i');
+            name = name.Replace('\u008D', 'i');
+            name = name.Replace('\u0152', 'i');
+            name = name.Replace('\u00A4', 'n');
+            name = name.Replace('\u00A5', 'n');
+            name = name.Replace('\u201D', 'o');
+            name = name.Replace('\u00A2', 'o');
+            name = name.Replace('\u2022', 'o');
+            name = name.Replace('\u201C', 'o');
+            name = name.Replace('\u2122', 'o');
+            name = name.Replace('\u2014', 'u');
+            name = name.Replace('\u2013', 'u');
+            name = name.Replace('\u00A3', 'u');
+            name = name.Replace('\u02DC', 'y');
             return name;
         }
 

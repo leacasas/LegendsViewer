@@ -22,7 +22,9 @@ namespace LegendsViewer.Legends.Events
             : base(properties, world)
         {
             LinkType = HfEntityLinkType.Unknown;
+            
             PositionId = -1;
+
             foreach (Property property in properties)
             {
                 switch (property.Name)
@@ -73,12 +75,13 @@ namespace LegendsViewer.Legends.Events
             }
 
             HistoricalFigure.AddEvent(this);
+
             Entity.AddEvent(this);
+
             AppointerHf.AddEvent(this);
+
             if (PromiseToHf != HistoricalFigure)
-            {
                 PromiseToHf.AddEvent(this);
-            }
         }
 
         public override string Print(bool link = true, DwarfObject pov = null)

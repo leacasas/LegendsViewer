@@ -25,17 +25,17 @@ namespace LegendsViewer.Legends.Parser
 
         public override void Parse()
         {
-            if (Xml.ReadState == ReadState.Closed)
+            if (XmlReader.ReadState == ReadState.Closed)
             {
                 return;
             }
 
-            while (!Xml.EOF && _currentItem == null)
+            while (!XmlReader.EOF && _currentItem == null)
             {
 
                 if (!_inMiddleOfSection)
                 {
-                    CurrentSection = GetSectionType(Xml.Name);
+                    CurrentSection = GetSectionType(XmlReader.Name);
                     if (CurrentSection != Section.Junk)
                     {
                         _worker.ReportProgress(0, "... " + CurrentSection.GetDescription() + " XMLPLUS");
@@ -44,7 +44,7 @@ namespace LegendsViewer.Legends.Parser
 
                 if (CurrentSection == Section.Junk)
                 {
-                    Xml.Read();
+                    XmlReader.Read();
                 }
                 else if (CurrentSection == Section.Unknown)
                 {
@@ -56,35 +56,35 @@ namespace LegendsViewer.Legends.Parser
                 }
             }
 
-            if (Xml.EOF)
+            if (XmlReader.EOF)
             {
-                Xml.Close();
+                XmlReader.Close();
             }
         }
 
         protected override void ParseSection()
         {
-            while (Xml.NodeType == XmlNodeType.EndElement || Xml.NodeType == XmlNodeType.None)
+            while (XmlReader.NodeType == XmlNodeType.EndElement || XmlReader.NodeType == XmlNodeType.None)
             {
-                if (Xml.NodeType == XmlNodeType.None)
+                if (XmlReader.NodeType == XmlNodeType.None)
                 {
                     return;
                 }
 
-                Xml.ReadEndElement();
+                XmlReader.ReadEndElement();
             }
 
             if (!_inMiddleOfSection)
             {
-                Xml.ReadStartElement();
+                XmlReader.ReadStartElement();
                 _inMiddleOfSection = true;
             }
 
             _currentItem = ParseItem();
 
-            if (Xml.NodeType == XmlNodeType.EndElement)
+            if (XmlReader.NodeType == XmlNodeType.EndElement)
             {
-                Xml.ReadEndElement();
+                XmlReader.ReadEndElement();
                 _inMiddleOfSection = false;
             }
         }
@@ -187,6 +187,7 @@ namespace LegendsViewer.Legends.Parser
                     }
 
                     _currentItem = null;
+
                     Parse();
                 }
             }

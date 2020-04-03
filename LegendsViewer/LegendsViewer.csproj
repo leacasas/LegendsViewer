@@ -290,6 +290,7 @@
     <Compile Include="Legends\HonorEntity.cs" />
     <Compile Include="Legends\IntrigueActor.cs" />
     <Compile Include="Legends\IntriguePlot.cs" />
+    <Compile Include="Legends\Parser\WorldEventFactory.cs" />
     <Compile Include="Legends\PlotActor.cs" />
     <Compile Include="Legends\SiteProperty.cs" />
     <Compile Include="Legends\VagueRelationship.cs" />

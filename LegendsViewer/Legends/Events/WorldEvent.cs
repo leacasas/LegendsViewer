@@ -28,9 +28,8 @@ namespace LegendsViewer.Legends.Events
             get
             {
                 if (Year < 0)
-                {
                     return "-";
-                }
+
                 return $"{Year:0000}-{Month:00}-{Day:00}";
             }
         }
@@ -53,6 +52,7 @@ namespace LegendsViewer.Legends.Events
         public WorldEvent(List<Property> properties, World world)
         {
             World = world;
+
             foreach (Property property in properties)
             {
                 switch (property.Name)
@@ -70,53 +70,39 @@ namespace LegendsViewer.Legends.Events
             string eventString = GetYearTime() + Type;
             eventString += PrintParentCollection(link, pov);
             eventString += ".";
+
             return eventString;
         }
 
         public virtual string GetYearTime()
         {
             if (Year == -1)
-            {
                 return "In a time before time, ";
-            }
 
             string yearTime = "In " + Year + ", ";
+
             if (Seconds72 == -1)
-            {
                 return yearTime;
-            }
 
             int month = Seconds72 % 100800;
+
             if (month <= 33600)
-            {
                 yearTime += "early ";
-            }
             else if (month <= 67200)
-            {
                 yearTime += "mid";
-            }
             else if (month <= 100800)
-            {
                 yearTime += "late ";
-            }
 
             int season = Seconds72 % 403200;
+
             if (season < 100800)
-            {
                 yearTime += "spring, ";
-            }
             else if (season < 201600)
-            {
                 yearTime += "summer, ";
-            }
             else if (season < 302400)
-            {
                 yearTime += "autumn, ";
-            }
             else if (season < 403200)
-            {
                 yearTime += "winter, ";
-            }
 
             return yearTime + " (" + Formatting.AddOrdinal(Day) + " of " + MonthName + ") ";
         }
@@ -124,20 +110,22 @@ namespace LegendsViewer.Legends.Events
         public string PrintParentCollection(bool link = true, DwarfObject pov = null)
         {
             if (ParentCollection == null)
-            {
                 return "";
-            }
+
             EventCollection parent = ParentCollection;
+            
             string collectionString = "";
+
             while (parent != null)
             {
                 if (collectionString.Length > 0)
-                {
                     collectionString += " as part of ";
-                }
+
                 collectionString += parent.ToLink(link, pov, this);
+
                 parent = parent.ParentCollection;
             }
+
             return " during " + collectionString;
         }
 

@@ -13,7 +13,7 @@ namespace LegendsViewer.Legends.Parser
     {
         private readonly BackgroundWorker _worker;
         private readonly World _world;
-        private readonly StreamReader _history;
+        private readonly StreamReader _historyReader;
         private readonly StringBuilder _log;
 
         private string _currentLine;
@@ -23,7 +23,7 @@ namespace LegendsViewer.Legends.Parser
         {
             _worker = worker;
             _world = world;
-            _history = new StreamReader(historyFile, Encoding.GetEncoding("windows-1252"));
+            _historyReader = new StreamReader(historyFile, Encoding.GetEncoding("windows-1252"));
             _log = new StringBuilder();
             _worker.ReportProgress(0, "\nParsing History File...");
         }
@@ -43,7 +43,7 @@ namespace LegendsViewer.Legends.Parser
 
         private void SkipToNextCiv()
         {
-            while (!_history.EndOfStream && !CivStart())
+            while (!_historyReader.EndOfStream && !CivStart())
             {
                 ReadLine();
             }
@@ -51,7 +51,7 @@ namespace LegendsViewer.Legends.Parser
 
         private void ReadLine()
         {
-            _currentLine = _history.ReadLine();
+            _currentLine = _historyReader.ReadLine();
         }
 
         private bool ReadCiv()
@@ -159,7 +159,7 @@ namespace LegendsViewer.Legends.Parser
 
         private bool LeaderStart()
         {
-            return !_history.EndOfStream && _currentLine.Contains(" List") && !_currentLine.Contains("[*]") && !_currentLine.Contains("%");
+            return !_historyReader.EndOfStream && _currentLine.Contains(" List") && !_currentLine.Contains("[*]") && !_currentLine.Contains("%");
         }
 
         private void ReadLeaders()
@@ -240,14 +240,14 @@ namespace LegendsViewer.Legends.Parser
         {
             _worker.ReportProgress(0, "... Civilization Infos");
 
-            _world.Name = Formatting.ReplaceNonAscii(_history.ReadLine());
-            _world.Name += ", " + _history.ReadLine();
+            _world.Name = Formatting.ReplaceNonAscii(_historyReader.ReadLine());
+            _world.Name += ", " + _historyReader.ReadLine();
 
             ReadLine();
 
             SkipAnimalPeople();
 
-            while (!_history.EndOfStream)
+            while (!_historyReader.EndOfStream)
             {
                 if (ReadCiv())
                 {
@@ -263,7 +263,7 @@ namespace LegendsViewer.Legends.Parser
             if (_currentLine != null && CivStart())
                 ReadCiv();
 
-            _history.Close();
+            _historyReader.Close();
 
             return _log.ToString();
         }
@@ -278,7 +278,7 @@ namespace LegendsViewer.Legends.Parser
         {
             if (disposing)
             {
-                _history.Dispose();
+                _historyReader.Dispose();
             }
         }
     }
