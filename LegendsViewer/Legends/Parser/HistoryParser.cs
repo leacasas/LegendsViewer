@@ -57,10 +57,13 @@ namespace LegendsViewer.Legends.Parser
         private bool ReadCiv()
         {
             string civName = _currentLine.Substring(0, _currentLine.IndexOf(",", StringComparison.Ordinal));
+
             CreatureInfo civRace = _world.GetCreatureInfo(_currentLine.Substring(_currentLine.IndexOf(",", StringComparison.Ordinal) + 2, 
                 _currentLine.Length - _currentLine.IndexOf(",", StringComparison.Ordinal) - 2).ToLower());
+
             var entities = _world.Entities
                 .Where(entity => string.Compare(entity.Name, civName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
+
             if (entities.Count == 1)
             {
                 _currentCiv = entities.First();
@@ -83,6 +86,7 @@ namespace LegendsViewer.Legends.Parser
                 else
                 {
                     var possibleCivilizations = possibleEntities.Where(entity => entity.Type == EntityType.Civilization).ToList();
+
                     if (possibleCivilizations.Count == 1)
                     {
                         _currentCiv = possibleEntities.First();
@@ -106,7 +110,9 @@ namespace LegendsViewer.Legends.Parser
                 _currentCiv.IsCiv = true;
                 _currentCiv.Type = EntityType.Civilization;
             }
+            
             ReadLine();
+
             return true;
         }
 
@@ -115,17 +121,23 @@ namespace LegendsViewer.Legends.Parser
             if (_currentLine.Contains("Worship List"))
             {
                 ReadLine();
+
                 while (_currentLine != null && _currentLine.StartsWith("  "))
                 {
                     if (_currentCiv != null)
                     {
-                        string deityName = Formatting.InitCaps(Formatting.ReplaceNonAscii(_currentLine.Substring(2, 
-                            _currentLine.IndexOf(",", StringComparison.Ordinal) - 2)));
-                        var deities = _world.HistoricalFigures.Where(h => h.Name.Equals(deityName.Replace("'", "`"), StringComparison.OrdinalIgnoreCase) && (h.Deity || h.Force)).ToList();
+                        string deityName = Formatting.InitCaps(Formatting.ReplaceNonAscii(_currentLine.Substring(2, _currentLine.IndexOf(",", StringComparison.Ordinal) - 2)));
+
+                        string deityNameToMatch = deityName.Replace("'", "`");
+
+                        var deities = _world.HistoricalFigures.Where(h => h.Name.Equals(deityNameToMatch) && (h.Deity || h.Force)).ToList();
+
                         if (deities.Count == 1)
                         {
                             var deity = deities.First();
+                            
                             deity.WorshippedBy = _currentCiv;
+
                             _currentCiv.Worshipped.Add(deity);
                         }
                         else if (deities.Count == 0)
@@ -139,6 +151,7 @@ namespace LegendsViewer.Legends.Parser
                         }
 #endif
                     }
+
                     ReadLine();
                 }
             }
@@ -154,17 +167,28 @@ namespace LegendsViewer.Legends.Parser
             while (LeaderStart())
             {
                 string leaderType = Formatting.InitCaps(_currentLine.Substring(1, _currentLine.IndexOf("List", StringComparison.Ordinal) - 2));
+
                 _currentCiv?.LeaderTypes.Add(leaderType);
                 _currentCiv?.Leaders.Add(new List<HistoricalFigure>());
+
                 ReadLine();
+
                 while (_currentLine != null && _currentLine.StartsWith("  "))
                 {
                     if (_currentCiv != null && _currentLine.Contains("[*]"))
                     {
-                        string leaderName = Formatting.ReplaceNonAscii(_currentLine.Substring(_currentLine.IndexOf("[*]", StringComparison.Ordinal) + 4, 
-                            _currentLine.IndexOf("(b", StringComparison.Ordinal) - _currentLine.IndexOf("[*]", StringComparison.Ordinal) - 5));
-                        var leaders = _world.HistoricalFigures.Where(hf =>
-                                string.Compare(hf.Name, leaderName.Replace("'", "`"), StringComparison.OrdinalIgnoreCase) == 0).ToList();
+                        int starIndex = _currentLine.IndexOf("[*]", StringComparison.Ordinal);
+
+                        string leaderName = Formatting.ReplaceNonAscii(
+                            _currentLine.Substring(
+                               starIndex + 4,
+                               _currentLine.IndexOf("(b", StringComparison.Ordinal) - starIndex - 5)
+                            );
+
+                        string leaderNameToMatch = leaderName.Replace("'", "`");
+
+                        var leaders = _world.HistoricalFigures.Where(hf => hf.Name.Equals(leaderNameToMatch)).ToList();
+                        
                         if (leaders.Count == 1)
                         {
                             var leader = leaders.First();
@@ -206,6 +230,7 @@ namespace LegendsViewer.Legends.Parser
                         }
 #endif
                     }
+
                     ReadLine();
                 }
             }
@@ -214,9 +239,12 @@ namespace LegendsViewer.Legends.Parser
         public string Parse()
         {
             _worker.ReportProgress(0, "... Civilization Infos");
+
             _world.Name = Formatting.ReplaceNonAscii(_history.ReadLine());
             _world.Name += ", " + _history.ReadLine();
+
             ReadLine();
+
             SkipAnimalPeople();
 
             while (!_history.EndOfStream)
@@ -231,13 +259,11 @@ namespace LegendsViewer.Legends.Parser
                     SkipToNextCiv();
                 }
             }
+
             if (_currentLine != null && CivStart())
-            {
                 ReadCiv();
-            }
 
             _history.Close();
-
 
             return _log.ToString();
         }

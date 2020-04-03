@@ -32,12 +32,16 @@ namespace LegendsViewer.Legends.Parser
         {
             ReadLine();
             ReadWorldPopulations();
+            
             _worker.ReportProgress(0, "... Sites");
+            
             var mainRaces = _world.CivilizedPopulations.Select(cp => cp.Race);
+            
             foreach (Entity civilization in _world.Entities.Where(entity => entity.Type == EntityType.Civilization && mainRaces.Contains(entity.Race)))
             {
                 civilization.IsCiv = true;
             }
+            
             while (_currentLine != "" && InSites())
             {
                 ReadSite();
@@ -47,8 +51,10 @@ namespace LegendsViewer.Legends.Parser
                 ReadOfficials();
                 ReadPopulations();
             }
+            
             ReadOutdoorPopulations();
             ReadUndergroundPopulations();
+            
             _sitesAndPops.Close();
         }
 
@@ -72,8 +78,11 @@ namespace LegendsViewer.Legends.Parser
             if (_currentLine == "Civilized World Population")
             {
                 _worker.ReportProgress(0, "... World Populations");
+                
                 ReadLine();
+                
                 _currentLine = _sitesAndPops.ReadLine();
+                
                 while (!string.IsNullOrEmpty(_currentLine) && !_sitesAndPops.EndOfStream)
                 {
                     if (string.IsNullOrEmpty(_currentLine))
@@ -88,12 +97,15 @@ namespace LegendsViewer.Legends.Parser
                     _world.CivilizedPopulations.Add(new Population(population, count));
                     _currentLine = _sitesAndPops.ReadLine();
                 }
+                
                 _world.CivilizedPopulations = _world.CivilizedPopulations.OrderByDescending(population => population.Count).ToList();
+                
                 while (_currentLine != "Sites")
                 {
                     _currentLine = _sitesAndPops.ReadLine();
                 }
             }
+
             if (_currentLine == "Sites")
             {
                 ReadLine();
@@ -104,16 +116,19 @@ namespace LegendsViewer.Legends.Parser
         private void ReadSite()
         {
             string siteId = _currentLine.Substring(0, _currentLine.IndexOf(":", StringComparison.Ordinal));
+            
             _site = _world.GetSite(Convert.ToInt32(siteId));
+            
             if (_site != null)
             {
                 string untranslatedName = Formatting.InitCaps(Formatting.ReplaceNonAscii(_currentLine.Substring(_currentLine.IndexOf(' ') + 1, _currentLine.IndexOf(',') - _currentLine.IndexOf(' ') - 1)));
+                
                 if (!string.IsNullOrWhiteSpace(_site.Name))
-                {
                     _site.UntranslatedName = untranslatedName;
-                }
             }
+            
             _owner = null;
+
             ReadLine();
         }
 
@@ -121,10 +136,15 @@ namespace LegendsViewer.Legends.Parser
         {
             if (_currentLine.Contains("Owner:"))
             {
-                string entityName = _currentLine.Substring(_currentLine.IndexOf(":", StringComparison.Ordinal) + 2,
-                    _currentLine.IndexOf(",", StringComparison.Ordinal) - _currentLine.IndexOf(":", StringComparison.Ordinal) - 2);
-                var entities = _world.Entities
-                    .Where(entity => string.Compare(entity.Name, entityName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
+                int semiColonIndex = _currentLine.IndexOf(":", StringComparison.Ordinal);
+
+                string entityName = _currentLine.Substring(
+                    semiColonIndex + 2,
+                    _currentLine.IndexOf(",", StringComparison.Ordinal) - semiColonIndex - 2
+                );
+
+                var entities = _world.Entities.Where(entity => entity.Name.Equals(entityName)).ToList();
+                
                 if (entities.Count == 1)
                 {
                     _owner = entities.First();
@@ -136,37 +156,38 @@ namespace LegendsViewer.Legends.Parser
                 else
                 {
                     var siteOwners = _site.OwnerHistory.Select(entry => entry.Owner).ToList();
+
                     if (siteOwners.Any())
                     {
                         foreach (var entity in entities)
                         {
                             if (siteOwners.Contains(entity))
-                            {
                                 _owner = entity;
-                            }
                         }
                     }
 #if DEBUG
                     if (_owner == null)
-                    {
                         _world.ParsingErrors.Report($"Ambiguous ({entities.Count}) Site Ownership:\n{entityName}, Site Owner of {_site.Name}");
-                    }
 #endif
                 }
+
                 if (_owner != null)
                 {
-                    var raceIdentifier = _currentLine.Substring(_currentLine.IndexOf(",", StringComparison.Ordinal) + 2,
-                        _currentLine.Length - _currentLine.IndexOf(",", StringComparison.Ordinal) - 2);
+                    var commaIndex = _currentLine.IndexOf(",", StringComparison.Ordinal);
+
+                    var raceIdentifier = _currentLine.Substring(
+                        commaIndex + 2,
+                        _currentLine.Length - commaIndex - 2);
+                    
                     _owner.Race = _world.GetCreatureInfo(raceIdentifier);
+
                     if (!_owner.Sites.Contains(_site))
-                    {
                         _owner.Sites.Add(_site);
-                    }
+
                     if (!_owner.CurrentSites.Contains(_site))
-                    {
                         _owner.CurrentSites.Add(_site);
-                    }
                 }
+
                 ReadLine();
             }
         }
@@ -249,14 +270,23 @@ namespace LegendsViewer.Legends.Parser
             {
                 while (!_sitesAndPops.EndOfStream && _currentLine.Contains(":") && !SiteStart())
                 {
-                    string officialName = Formatting.ReplaceNonAscii(_currentLine.Substring(_currentLine.IndexOf(":", StringComparison.Ordinal) + 2,
-                        _currentLine.IndexOf(",", StringComparison.Ordinal) - _currentLine.IndexOf(":", StringComparison.Ordinal) - 2));
-                    var officials = _world.HistoricalFigures.Where(hf =>
-                            string.Compare(hf.Name, officialName.Replace("'", "`"), StringComparison.OrdinalIgnoreCase) == 0).ToList();
+                    int semiColonIndex = _currentLine.IndexOf(":", StringComparison.Ordinal);
+
+                    string officialName = Formatting.ReplaceNonAscii(
+                        _currentLine.Substring(semiColonIndex + 2,
+                        _currentLine.IndexOf(",", StringComparison.Ordinal) - semiColonIndex - 2)
+                    );
+
+                    string officialNameToMatch = officialName.Replace("'", "`");
+
+                    var officials = _world.HistoricalFigures.Where(hf => hf.Name.Equals(officialNameToMatch)).ToList();
+                    
                     if (officials.Count == 1)
                     {
                         var siteOfficial = officials.First();
+
                         string siteOfficialPosition = _currentLine.Substring(1, _currentLine.IndexOf(":", StringComparison.Ordinal) - 1);
+
                         _site.Officials.Add(new Site.Official(siteOfficial, siteOfficialPosition));
                     }
                     else if (officials.Count == 0)
