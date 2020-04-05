@@ -19,7 +19,7 @@ namespace LegendsViewer
 
     public partial class FrmLegendsViewer : Form
     {
-        string _version = "n/a";
+        private readonly string _version = "n/a";
         internal readonly DwarfTabControl Browser;
         internal bool DontRefreshBrowserPages = true;
         private readonly string _commandFile;
@@ -34,7 +34,6 @@ namespace LegendsViewer
         {
             InitializeComponent();
 
-            // Start local http server
             LocalFileProvider.Run();
 
             Coordinator = new LvCoordinator(this);
@@ -44,25 +43,29 @@ namespace LegendsViewer
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+
             _version = fvi.FileVersion;
+
             var versionNumbers = _version.Split('.');
+
             if (versionNumbers.Length > 3)
-            {
                 _version = $"{versionNumbers[0]}.{versionNumbers[1]}.{versionNumbers[2]}";
-            }
 
             Text = "Legends Viewer";
             lblVersion.Text = "v" + _version;
             lblVersion.Left = scWorld.Panel2.ClientSize.Width - lblVersion.Width - 3;
+
             tcWorld.Height = scWorld.Panel2.ClientSize.Height;
 
             Browser = new DwarfTabControl(World)
             {
-                Location = new Point(0, btnBack.Bottom + 3)
+                Location = new Point(0, btnBack.Bottom + 3),
+                Size = new Size(scWorld.Panel2.ClientSize.Width - Browser.Left, scWorld.Panel2.ClientSize.Height - Browser.Top),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right
             };
-            Browser.Size = new Size(scWorld.Panel2.ClientSize.Width - Browser.Left, scWorld.Panel2.ClientSize.Height - Browser.Top);
-            Browser.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right;
+
             scWorld.Panel2.Controls.Add(Browser);
+
             foreach (TabPage tp in tcWorld.TabPages)
             {
                 foreach (TabControl tabControl in tp.Controls.OfType<TabControl>())
@@ -72,9 +75,7 @@ namespace LegendsViewer
             }
 
             if (file != "")
-            {
                 _commandFile = file;
-            }
 
             foreach (var v in tcWorld.TabPages.OfType<TabPage>().SelectMany(x => x.Controls.OfType<BaseSearchTab>()))
             {
@@ -82,6 +83,7 @@ namespace LegendsViewer
             }
 
             BrowserUtil.SetBrowserEmulationMode();
+
             Browser.Navigate(ControlOption.ReadMe);
         }
 
@@ -118,10 +120,10 @@ namespace LegendsViewer
             if (!FileLoader.Working && World != null)
             {
                 World.Dispose();
+                
                 foreach (Entity entity in World.Entities)
-                {
                     entity.Identicon?.Dispose();
-                }
+
                 World = null;
             }
 

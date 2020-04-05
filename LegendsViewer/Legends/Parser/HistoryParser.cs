@@ -58,11 +58,11 @@ namespace LegendsViewer.Legends.Parser
         {
             string civName = _currentLine.Substring(0, _currentLine.IndexOf(",", StringComparison.Ordinal));
 
-            CreatureInfo civRace = _world.GetCreatureInfo(_currentLine.Substring(_currentLine.IndexOf(",", StringComparison.Ordinal) + 2, 
+            CreatureInfo civRace = _world.GetCreatureInfo(
+                _currentLine.Substring(_currentLine.IndexOf(",", StringComparison.Ordinal) + 2, 
                 _currentLine.Length - _currentLine.IndexOf(",", StringComparison.Ordinal) - 2).ToLower());
 
-            var entities = _world.Entities
-                .Where(entity => string.Compare(entity.Name, civName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
+            var entities = _world.Entities.Where(entity => string.Compare(entity.Name, civName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
 
             if (entities.Count == 1)
             {
@@ -75,6 +75,7 @@ namespace LegendsViewer.Legends.Parser
             else
             {
                 var possibleEntities = entities.Where(entity => entity.Race == civRace).ToList();
+
                 if (possibleEntities.Count == 1)
                 {
                     _currentCiv = possibleEntities.First();
@@ -130,7 +131,7 @@ namespace LegendsViewer.Legends.Parser
 
                         string deityNameToMatch = deityName.Replace("'", "`");
 
-                        var deities = _world.HistoricalFigures.Where(h => h.Name.Equals(deityNameToMatch) && (h.Deity || h.Force)).ToList();
+                        var deities = _world.HistoricalFigures.Where(h => h.Name.Equals(deityNameToMatch, StringComparison.OrdinalIgnoreCase) && (h.Deity || h.Force)).ToList();
 
                         if (deities.Count == 1)
                         {
@@ -187,7 +188,7 @@ namespace LegendsViewer.Legends.Parser
 
                         string leaderNameToMatch = leaderName.Replace("'", "`");
 
-                        var leaders = _world.HistoricalFigures.Where(hf => hf.Name.Equals(leaderNameToMatch)).ToList();
+                        var leaders = _world.HistoricalFigures.Where(hf => hf.Name.Equals(leaderNameToMatch, StringComparison.OrdinalIgnoreCase)).ToList();
                         
                         if (leaders.Count == 1)
                         {

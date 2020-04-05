@@ -65,11 +65,11 @@ namespace LegendsViewer.Legends
         public void Resolve(World world)
         {
             Owner = world.GetHistoricalFigure(OwnerId);
+
             Owner?.SiteProperties.Add(this);
+
             if (Structure != null && Owner != null)
-            {
                 Structure.Owner = Owner;
-            }
         }
     }
 }

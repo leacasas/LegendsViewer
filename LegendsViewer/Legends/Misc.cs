@@ -50,9 +50,11 @@ namespace LegendsViewer.Legends
         {
             int min = 0;
             int max = list.Count - 1;
+
             while (min <= max)
             {
                 int mid = min + (max - min) / 2;
+
                 if (id > list[mid].Id)
                 {
                     min = mid + 1;
@@ -66,6 +68,7 @@ namespace LegendsViewer.Legends
                     return list[mid];
                 }
             }
+
             return null;
         }
     }

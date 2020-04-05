@@ -43,6 +43,7 @@ namespace LegendsViewer.Legends.Events
             SlayerRace = "UNKNOWN";
             SlayerCaste = "UNKNOWN";
             Cause = DeathCause.Unknown;
+
             foreach (Property property in properties)
             {
                 switch (property.Name)
@@ -124,19 +125,18 @@ namespace LegendsViewer.Legends.Events
             }
 
             HistoricalFigure.AddEvent(this);
+
             if (HistoricalFigure.DeathCause == DeathCause.None)
-            {
                 HistoricalFigure.DeathCause = Cause;
-            }
 
             if (Slayer != null)
             {
                 if (HistoricalFigure != Slayer)
-                {
                     Slayer.AddEvent(this);
-                }
+
                 Slayer.NotableKills.Add(this);
             }
+
             Site.AddEvent(this);
             Region.AddEvent(this);
             UndergroundRegion.AddEvent(this);

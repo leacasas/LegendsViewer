@@ -332,14 +332,11 @@ namespace LegendsViewer.Legends
         public HistoricalFigure GetHistoricalFigure(int id)
         {
             if (id < 0)
-            {
                 return null;
-            }
 
             if (id < HistoricalFigures.Count && HistoricalFigures[id].Id == id)
-            {
                 return HistoricalFigures[id];
-            }
+
             return HistoricalFigures.GetWorldObject(id) ?? HistoricalFigure.Unknown;
         }
         public Entity GetEntity(int id)
@@ -735,17 +732,14 @@ namespace LegendsViewer.Legends
         private void ResolveSitePropertyOwners()
         {
             if (Sites.Count > 0)
-            {
                 _worker.ReportProgress(0, "... Structure Owners");
-            }
+
             foreach (var site in Sites)
             {
                 if (site.SiteProperties.Any())
                 {
                     foreach (SiteProperty siteProperty in site.SiteProperties)
-                    {
                         siteProperty.Resolve(this);
-                    }
                 }
             }
         }

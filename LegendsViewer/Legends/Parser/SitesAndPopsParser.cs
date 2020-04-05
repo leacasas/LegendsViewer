@@ -90,6 +90,7 @@ namespace LegendsViewer.Legends.Parser
                         _currentLine = _sitesAndPops.ReadLine();
                         continue;
                     }
+
                     CreatureInfo population = _world.GetCreatureInfo(_currentLine.Substring(_currentLine.IndexOf(" ", StringComparison.Ordinal) + 1));
                     string countString = _currentLine.Substring(1, _currentLine.IndexOf(" ", StringComparison.Ordinal) - 1);
                     var count = countString == "Unnumbered" ? int.MaxValue : Convert.ToInt32(countString);
@@ -143,7 +144,7 @@ namespace LegendsViewer.Legends.Parser
                     _currentLine.IndexOf(",", StringComparison.Ordinal) - semiColonIndex - 2
                 );
 
-                var entities = _world.Entities.Where(entity => entity.Name.Equals(entityName)).ToList();
+                var entities = _world.Entities.Where(entity => entity.Name.Equals(entityName, StringComparison.OrdinalIgnoreCase)).ToList();
                 
                 if (entities.Count == 1)
                 {
@@ -197,12 +198,15 @@ namespace LegendsViewer.Legends.Parser
             if (_currentLine.Contains("Parent Civ:"))
             {
                 Entity parent = null;
+                
                 string civName = _currentLine.Substring(_currentLine.IndexOf(":", StringComparison.Ordinal) + 2,
                     _currentLine.IndexOf(",", StringComparison.Ordinal) - _currentLine.IndexOf(":", StringComparison.Ordinal) - 2);
+                
                 CreatureInfo civRace = _world.GetCreatureInfo(_currentLine.Substring(_currentLine.IndexOf(",", StringComparison.Ordinal) + 2,
                     _currentLine.Length - _currentLine.IndexOf(",", StringComparison.Ordinal) - 2));
-                var entities = _world.Entities
-                    .Where(entity => string.Compare(entity.Name, civName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
+                
+                var entities = _world.Entities.Where(entity => string.Compare(entity.Name, civName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
+                
                 if (entities.Count == 1)
                 {
                     parent = entities.First();
@@ -214,6 +218,7 @@ namespace LegendsViewer.Legends.Parser
                 else
                 {
                     var possibleEntities = entities.Where(entity => entity.Race == civRace).ToList();
+
                     if (possibleEntities.Count == 1)
                     {
                         parent = possibleEntities.First();
@@ -225,6 +230,7 @@ namespace LegendsViewer.Legends.Parser
                     else
                     {
                         var possibleCivilizations = possibleEntities.Where(entity => entity.Type == EntityType.Civilization).ToList();
+
                         if (possibleCivilizations.Count == 1)
                         {
                             parent = possibleEntities.First();
@@ -232,8 +238,7 @@ namespace LegendsViewer.Legends.Parser
                         else
                         {
 #if DEBUG
-                            _world.ParsingErrors.Report(
-                                $"Ambiguous Parent Entity Name:\n{civName}, Parent Civ of {_owner.Name}");
+                            _world.ParsingErrors.Report($"Ambiguous Parent Entity Name:\n{civName}, Parent Civ of {_owner.Name}");
 #endif
                         }
                     }
@@ -242,21 +247,19 @@ namespace LegendsViewer.Legends.Parser
                 if (parent != null)
                 {
                     parent.Race = civRace;
+
                     if (_owner != null)
                     {
                         var current = _owner;
+
                         while (!current.IsCiv && current.Parent != null)
-                        {
                             current = current.Parent;
-                        }
+
                         if (!current.IsCiv && current.Parent == null && current != parent)
-                        {
                             current.Parent = parent;
-                        }
+
                         if (!parent.Groups.Contains(_owner))
-                        {
                             parent.Groups.Add(_owner);
-                        }
                     }
                 }
 
@@ -279,7 +282,7 @@ namespace LegendsViewer.Legends.Parser
 
                     string officialNameToMatch = officialName.Replace("'", "`");
 
-                    var officials = _world.HistoricalFigures.Where(hf => hf.Name.Equals(officialNameToMatch)).ToList();
+                    var officials = _world.HistoricalFigures.Where(hf => hf.Name.Equals(officialNameToMatch, StringComparison.OrdinalIgnoreCase)).ToList();
                     
                     if (officials.Count == 1)
                     {
@@ -423,7 +426,6 @@ namespace LegendsViewer.Legends.Parser
             _world.UndergroundPopulations = _world.UndergroundPopulations.OrderByDescending(population => population.Count).ToList();
         }
 
-
         public void Dispose()
         {
             Dispose(true);
@@ -437,6 +439,5 @@ namespace LegendsViewer.Legends.Parser
                 _sitesAndPops.Dispose();
             }
         }
-
     }
 }

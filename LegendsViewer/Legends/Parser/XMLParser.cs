@@ -428,31 +428,35 @@ namespace LegendsViewer.Legends.Parser
             //Attempt at calculating beast historical figure for beast attacks.
             //Find beast by looking at eventsList and fill in some event properties from the beast attacks's properties
             //Calculated here so it can look in Duel collections contained in beast attacks
-            foreach (BeastAttack beastAttack in World.EventCollections.OfType<BeastAttack>())
+            foreach (BeastAttack beastAttack in World.BeastAttacks)
             {
-                if (beastAttack.Beast == null && beastAttack.GetSubEvents().OfType<HfAttackedSite>().Any())
-                {
-                    beastAttack.Beast = beastAttack.GetSubEvents().OfType<HfAttackedSite>().First().Attacker;
-                }
-                if (beastAttack.Beast == null && beastAttack.GetSubEvents().OfType<HfDestroyedSite>().Any())
-                {
-                    beastAttack.Beast = beastAttack.GetSubEvents().OfType<HfDestroyedSite>().First().Attacker;
-                }
+                var allBeastSubEvents = beastAttack.GetSubEvents();
+
+                var attackedSiteEvents = allBeastSubEvents.OfType<HfAttackedSite>();
+                if (beastAttack.Beast == null && attackedSiteEvents.Any())
+                    beastAttack.Beast = attackedSiteEvents.First().Attacker;
+
+                var destroyedSiteEvents = allBeastSubEvents.OfType<HfDestroyedSite>();
+                if (beastAttack.Beast == null && destroyedSiteEvents.Any())
+                    beastAttack.Beast = destroyedSiteEvents.First().Attacker;
 
                 //Find Beast by looking at fights, Beast always engages the first fight in a Beast Attack?
-                if (beastAttack.Beast == null && beastAttack.GetSubEvents().OfType<HfSimpleBattleEvent>().Any())
+                var simpleBattleEvents = allBeastSubEvents.OfType<HfSimpleBattleEvent>();
+                if (beastAttack.Beast == null && simpleBattleEvents.Any())
+                    beastAttack.Beast = simpleBattleEvents.First().HistoricalFigure1;
+
+                var addHistoricalFigureLinkEvent = allBeastSubEvents.OfType<AddHfEntityLink>();
+                if (beastAttack.Beast == null && addHistoricalFigureLinkEvent.Any())
                 {
-                    var hfSimpleBattleEvent = beastAttack.GetSubEvents().OfType<HfSimpleBattleEvent>().First();
-                    beastAttack.Beast = hfSimpleBattleEvent.HistoricalFigure1;
-                }
-                if (beastAttack.Beast == null && beastAttack.GetSubEvents().OfType<AddHfEntityLink>().Any())
-                {
-                    var addHfEntityLink = beastAttack.GetSubEvents().OfType<AddHfEntityLink>().FirstOrDefault(link => link.LinkType == HfEntityLinkType.Enemy);
+                    var addHfEntityLink = addHistoricalFigureLinkEvent.FirstOrDefault(link => link.LinkType == HfEntityLinkType.Enemy);
                     beastAttack.Beast = addHfEntityLink?.HistoricalFigure;
                 }
-                if (beastAttack.Beast == null && beastAttack.GetSubEvents().OfType<HfDied>().Any())
+
+                var historicalFigureDiedEvent = allBeastSubEvents.OfType<HfDied>();
+                if (beastAttack.Beast == null && historicalFigureDiedEvent.Any())
                 {
-                    var hfDied = beastAttack.GetSubEvents().OfType<HfDied>().FirstOrDefault();
+                    var hfDied = historicalFigureDiedEvent.FirstOrDefault();
+
                     if (hfDied?.HistoricalFigure != null && hfDied.HistoricalFigure.RelatedSites.Any(siteLink => siteLink.Type == SiteLinkType.Lair))
                     {
                         beastAttack.Beast = hfDied.HistoricalFigure;
@@ -463,16 +467,10 @@ namespace LegendsViewer.Legends.Parser
                     }
                     else
                     {
-                        var slayers =
-                            beastAttack.GetSubEvents()
-                                .OfType<HfDied>()
-                                .GroupBy(death => death.Slayer)
-                                .Select(hf => new { HF = hf.Key, Count = hf.Count() });
+                        var slayers = historicalFigureDiedEvent.GroupBy(death => death.Slayer).Select(hf => new { HF = hf.Key, Count = hf.Count() });
+                        
                         if (slayers.Count(slayer => slayer.Count > 1) == 1)
-                        {
-                            HistoricalFigure beast = slayers.Single(slayer => slayer.Count > 1).HF;
-                            beastAttack.Beast = beast;
-                        }
+                            beastAttack.Beast = slayers.Single(slayer => slayer.Count > 1).HF;
                     }
                 }
 
@@ -480,6 +478,8 @@ namespace LegendsViewer.Legends.Parser
                 //Fill in some various event info from collections.
 
                 int insertIndex;
+                
+                var beastOwnEvents = beastAttack.Beast != null ? beastAttack.Beast.Events : new List<WorldEvent>();
 
                 foreach (ItemStolen theft in beastAttack.Collection.OfType<ItemStolen>())
                 {
@@ -491,6 +491,7 @@ namespace LegendsViewer.Legends.Parser
                     {
                         beastAttack.Site = theft.Site;
                     }
+
                     if (theft.Thief == null)
                     {
                         theft.Thief = beastAttack.Beast;
@@ -500,21 +501,22 @@ namespace LegendsViewer.Legends.Parser
                         beastAttack.Beast = theft.Thief;
                     }
 
+                    var beastSiteEvents = beastAttack.Site.Events;
+
                     if (beastAttack.Site != null)
                     {
-                        insertIndex = beastAttack.Site.Events.BinarySearch(theft);
+                        insertIndex = beastSiteEvents.BinarySearch(theft);
+
                         if (insertIndex < 0)
-                        {
-                            beastAttack.Site.Events.Add(theft);
-                        }
+                            beastSiteEvents.Add(theft);
                     }
+                    
                     if (beastAttack.Beast != null)
                     {
-                        insertIndex = beastAttack.Beast.Events.BinarySearch(theft);
+                        insertIndex = beastOwnEvents.BinarySearch(theft);
+
                         if (insertIndex < 0)
-                        {
-                            beastAttack.Beast.Events.Add(theft);
-                        }
+                            beastOwnEvents.Add(theft);
                     }
                 }
 
@@ -528,13 +530,13 @@ namespace LegendsViewer.Legends.Parser
                     {
                         beastAttack.Beast = devoured.Eater;
                     }
+
                     if (beastAttack.Beast != null)
                     {
-                        insertIndex = beastAttack.Beast.Events.BinarySearch(devoured);
+                        insertIndex = beastOwnEvents.BinarySearch(devoured);
+
                         if (insertIndex < 0)
-                        {
-                            beastAttack.Beast.Events.Add(devoured);
-                        }
+                            beastOwnEvents.Add(devoured);
                     }
                 }
 
@@ -550,20 +552,18 @@ namespace LegendsViewer.Legends.Parser
                     }
                     if (beastAttack.Beast != null)
                     {
-                        insertIndex = beastAttack.Beast.Events.BinarySearch(abducted);
+                        insertIndex = beastOwnEvents.BinarySearch(abducted);
+
                         if (insertIndex < 0)
-                        {
                             beastAttack.Beast.Events.Add(abducted);
-                        }
                     }
                 }
 
                 if (beastAttack.Beast != null)
                 {
                     if (beastAttack.Beast.BeastAttacks == null)
-                    {
                         beastAttack.Beast.BeastAttacks = new List<BeastAttack>();
-                    }
+
                     beastAttack.Beast.BeastAttacks.Add(beastAttack);
                 }
             }
