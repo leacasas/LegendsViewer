@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using LegendsViewer.Controls;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml;
-using LegendsViewer.Controls;
 
 namespace LegendsViewer.Legends.Parser
 {
@@ -92,37 +92,36 @@ namespace LegendsViewer.Legends.Parser
         public void AddNewProperties(List<Property> existingProperties, Section xmlParserSection)
         {
             if (_currentItem == null)
-            {
                 return;
-            }
+
+            if (xmlParserSection < CurrentSection)
+                return;
 
             if (xmlParserSection > CurrentSection)
             {
                 while (xmlParserSection > CurrentSection)
                 {
                     AddItemToWorld(_currentItem);
+                    
                     _currentItem = null;
+
                     Parse();
                 }
-            }
-
-            if (xmlParserSection < CurrentSection)
-            {
-                return;
             }
 
             if (_currentItem != null)
             {
                 Property id = existingProperties.Find(property => property.Name == "id");
                 Property currentId = _currentItem.Find(property => property.Name == "id");
+
                 while (currentId != null && currentId.ValueAsInt() < 0)
                 {
                     _currentItem = ParseItem();
+
                     if (_currentItem != null)
-                    {
                         currentId = _currentItem.Find(property => property.Name == "id");
-                    }
                 }
+
                 if (id != null && currentId != null && id.ValueAsInt().Equals(currentId.ValueAsInt()))
                 {
                     if (_currentItem != null)

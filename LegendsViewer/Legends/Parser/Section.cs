@@ -38,5 +38,4 @@ namespace LegendsViewer.Legends.Parser
         [Description("Dance Forms")]
         DanceForms
     }
-    // !!! In order as they appear in the XML. !!!
 }

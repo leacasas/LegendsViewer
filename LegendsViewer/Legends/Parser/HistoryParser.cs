@@ -192,13 +192,14 @@ namespace LegendsViewer.Legends.Parser
                         
                         if (leaders.Count == 1)
                         {
+                            var semicolonIndex = _currentLine.IndexOf(":", StringComparison.Ordinal);
+                            int reignBegan = Convert.ToInt32(_currentLine.Substring(semicolonIndex + 2, _currentLine.IndexOf("), ", StringComparison.Ordinal) - semicolonIndex - 2));
+
                             var leader = leaders.First();
-                            int reignBegan = Convert.ToInt32(_currentLine.Substring(_currentLine.IndexOf(":", StringComparison.Ordinal) + 2, 
-                                _currentLine.IndexOf("), ", StringComparison.Ordinal) - _currentLine.IndexOf(":", StringComparison.Ordinal) - 2));
-                            if (_currentCiv.Leaders[_currentCiv.LeaderTypes.Count - 1].Count > 0) //End of previous leader's reign
-                            {
-                                _currentCiv.Leaders[_currentCiv.LeaderTypes.Count - 1].Last().Positions.Last().Ended = reignBegan - 1;
-                            }
+                            var previousCivLeaders = _currentCiv.Leaders[_currentCiv.LeaderTypes.Count - 1];
+
+                            if (previousCivLeaders.Count > 0)
+                                previousCivLeaders.Last().Positions.Last().Ended = reignBegan - 1;
 
                             if (leader.Positions.Count > 0 && leader.Positions.Last().Ended == -1) //End of leader's last leader position (move up rank etc.)
                             {
@@ -206,6 +207,7 @@ namespace LegendsViewer.Legends.Parser
                                 lastPosition.Ended = reignBegan;
                                 lastPosition.Length = lastPosition.Began - reignBegan;
                             }
+                            
                             HistoricalFigure.Position newPosition = new HistoricalFigure.Position(_currentCiv, reignBegan, -1, leaderType);
                             if (leader.DeathYear != -1)
                             {
@@ -218,7 +220,8 @@ namespace LegendsViewer.Legends.Parser
                             }
 
                             leader.Positions.Add(newPosition);
-                            _currentCiv.Leaders[_currentCiv.LeaderTypes.Count - 1].Add(leader);
+
+                            previousCivLeaders.Add(leader);
                         }
                         else if (leaders.Count == 0)
                         {

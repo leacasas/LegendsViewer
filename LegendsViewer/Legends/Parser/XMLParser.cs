@@ -1,3 +1,8 @@
+using LegendsViewer.Controls;
+using LegendsViewer.Legends.Enums;
+using LegendsViewer.Legends.EventCollections;
+using LegendsViewer.Legends.Events;
+using LegendsViewer.Legends.WorldObjects;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,11 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using LegendsViewer.Controls;
-using LegendsViewer.Legends.Enums;
-using LegendsViewer.Legends.EventCollections;
-using LegendsViewer.Legends.Events;
-using LegendsViewer.Legends.WorldObjects;
 
 namespace LegendsViewer.Legends.Parser
 {
@@ -190,7 +190,7 @@ namespace LegendsViewer.Legends.Parser
             if (string.IsNullOrEmpty(XmlReader.Name))
                 return null;
 
-            Property property = new Property();
+            var property = new Property();
 
             if (XmlReader.IsEmptyElement)
             {
@@ -263,13 +263,10 @@ namespace LegendsViewer.Legends.Parser
             foreach (Property property in properties)
             {
                 if (!property.Known)
-                {
                     World.ParsingErrors.Report("|==> " + path + " --- Unknown Property: " + property.Name, property.Value);
-                }
+
                 if (property.SubProperties != null)
-                {
                     CheckKnownStateOfProperties(path + "/" + property.Name, property.SubProperties);
-                }
             }
         }
 
@@ -323,7 +320,7 @@ namespace LegendsViewer.Legends.Parser
                     World.MountainPeaks.Add(new MountainPeak(properties, World));
                     break;
                 case Section.CreatureRaw:
-                    World.AddCreatureInfo(new CreatureInfo(properties, World));
+                    World.AddCreatureInfo(new CreatureInfo(properties));
                     break;
                 case Section.Identities:
                     World.Identities.Add(new Identity(properties, World));
@@ -341,18 +338,13 @@ namespace LegendsViewer.Legends.Parser
         {
             if (section == Section.Events)
             {
-                //Calculate Historical Figure Ages.
                 int lastYear = World.Events.Last().Year;
+
                 foreach (HistoricalFigure hf in World.HistoricalFigures)
                 {
-                    if (hf.DeathYear > 0)
-                    {
-                        hf.Age = hf.DeathYear - hf.BirthYear;
-                    }
-                    else
-                    {
-                        hf.Age = lastYear - hf.BirthYear;
-                    }
+                    hf.Age = hf.DeathYear > 0 
+                        ? hf.DeathYear - hf.BirthYear 
+                        : lastYear - hf.BirthYear;
                 }
             }
 
@@ -379,10 +371,9 @@ namespace LegendsViewer.Legends.Parser
             if (section == Section.Eras)
             {
                 World.Eras.Last().EndYear = World.Events.Last().Year;
+
                 for (int i = 0; i < World.Eras.Count - 1; i++)
-                {
                     World.Eras[i].EndYear = World.Eras[i + 1].StartYear - 1;
-                }
 
                 foreach (Era era in World.Eras)
                 {

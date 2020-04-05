@@ -93,27 +93,18 @@ namespace LegendsViewer.Legends
         public static string FormatRace(string race)
         {
             if (race.Contains("DEMON"))
-            {
                 return "Demon";
-            }
 
             if (race.Contains("FORGOTTEN"))
-            {
                 return "Forgotten Beast";
-            }
 
             if (race.Contains("NIGHT_CREATURE"))
-            {
                 return "Night Creature";
-            }
 
             if (race.Contains("TITAN"))
-            {
                 return "Titan";
-            }
 
             return InitCaps(race.Replace('_', ' ').ToLower());
-
         }
 
         public static string RemoveSpecialCharacters(string str)

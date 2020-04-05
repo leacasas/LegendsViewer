@@ -82,6 +82,7 @@ namespace LegendsViewer.Legends
         public World(BackgroundWorker worker, string xmlFile, string historyFile, string sitesAndPopulationsFile, string mapFile, string xmlPlusFile)
         {
             _worker = worker;
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
@@ -91,15 +92,17 @@ namespace LegendsViewer.Legends
 
             CreateUnknowns();
 
-            XmlParser xml = new XmlParser(worker, this, xmlFile, xmlPlusFile);
+            var xml = new XmlParser(worker, this, xmlFile, xmlPlusFile);
             xml.Parse();
 
             HistoryParser history = new HistoryParser(worker, this, historyFile);
             Log.Append(history.Parse());
+
             SitesAndPopulationsParser sitesAndPopulations = new SitesAndPopulationsParser(worker, this, sitesAndPopulationsFile);
             sitesAndPopulations.Parse();
 
             _worker.ReportProgress(0, "\nResolving Links between...");
+
             ProcessHFtoEntityLinks();
             ResolveHfToEntityPopulation();
             ResolveStructureProperties();
@@ -119,10 +122,10 @@ namespace LegendsViewer.Legends
             Battle.Filters = new List<string>();
             SiteConquered.Filters = new List<string>();
             List<string> eraFilters = new List<string>();
+
             foreach (var eventInfo in AppHelpers.EventInfo)
-            {
                 eraFilters.Add(eventInfo[0]);
-            }
+
             Era.Filters = eraFilters;
             BeastAttack.Filters = new List<string>();
             Artifact.Filters = new List<string>();
@@ -131,12 +134,14 @@ namespace LegendsViewer.Legends
             Structure.Filters = new List<string>();
 
             _worker.ReportProgress(0, "\nGenerating Graphics...");
+
             GenerateCivIdenticons();
             GenerateMaps(mapFile);
 
             Log.AppendLine(ParsingErrors.Print());
 
             sw.Stop();
+
             Log.AppendLine($"Duration: {sw.Elapsed.Seconds + sw.Elapsed.Minutes * 60} secs, {sw.Elapsed.Milliseconds:D3} ms ");
         }
 

@@ -1034,11 +1034,11 @@ namespace LegendsViewer.Controls.Chart
                     if (option == ChartOption.TimeLineAliveHfSpecific && !SeriesOptions.Contains(ChartOption.TimeLineAliveHfSpecific))
                     {
                         DlgHf selectHfRace = new DlgHf(_world);
+                        
                         selectHfRace.ShowDialog();
-                        if (selectHfRace.SelectedRace == "")
-                        {
+                        
+                        if (string.IsNullOrEmpty(selectHfRace.SelectedRace))
                             return;
-                        }
 
                         _aliveHfRace = selectHfRace.SelectedRace;
                     }

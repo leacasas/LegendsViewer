@@ -155,6 +155,7 @@ namespace LegendsViewer.Legends.WorldObjects
         public HistoricalFigure()
         {
             Initialize();
+
             Name = "an unknown creature";
             Race = CreatureInfo.Unknown;
             Caste = "UNKNOWN";

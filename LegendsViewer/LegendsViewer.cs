@@ -60,9 +60,9 @@ namespace LegendsViewer
             Browser = new DwarfTabControl(World)
             {
                 Location = new Point(0, btnBack.Bottom + 3),
-                Size = new Size(scWorld.Panel2.ClientSize.Width - Browser.Left, scWorld.Panel2.ClientSize.Height - Browser.Top),
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom | AnchorStyles.Right
             };
+            Browser.Size = new Size(scWorld.Panel2.ClientSize.Width - Browser.Left, scWorld.Panel2.ClientSize.Height - Browser.Top);
 
             scWorld.Panel2.Controls.Add(Browser);
 
